@@ -205,15 +205,17 @@ if (WIN32)
 		)
 	endif()
 
-	# GCC Runtime
-	file(GLOB MATCHED_FILES LIST_DIRECTORIES false "${APP_WINDOWS_SYSROOT}/bin/libgcc_s_*.dll")
-	install(FILES ${MATCHED_FILES} DESTINATION .)
-	file(GLOB MATCHED_FILES LIST_DIRECTORIES false "${APP_WINDOWS_SYSROOT}/bin/libstdc++-*.dll")
-	install(FILES ${MATCHED_FILES} DESTINATION .)
+	set(RUNTIME_GLOBS)
 
+	# C++ Runtime
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+		list(APPEND RUNTIME_GLOBS "libgcc_s_*.dll" "libstdc++-*.dll")
+	elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+		list(APPEND RUNTIME_GLOBS "libc++*.dll" "libunwind*.dll")
+	endif()
 
 	#	All of GTK+ / PCRE
-	set(GTK_FILES
+	list(APPEND RUNTIME_GLOBS
 #		gdk-pixbuf-query-loaders.exe
 		gspawn-win32-helper-console.exe
 		gspawn-win32-helper.exe
@@ -296,6 +298,7 @@ if (WIN32)
 		libpangomm-*.dll
 		libpangowin32-*.dll
 		libpcre-*.dll
+		libpcre2-*.dll
 		libpcre16-*.dll
 		libpcre32-*.dll
 		libpcrecpp-*.dll
@@ -334,7 +337,7 @@ if (WIN32)
 #		tk86.dll
 		zlib*.dll
 	)
-	foreach(pattern ${GTK_FILES})
+	foreach(pattern ${RUNTIME_GLOBS})
 		file(GLOB MATCHED_FILES
 			LIST_DIRECTORIES false
 			"${APP_WINDOWS_SYSROOT}/bin/${pattern}"
